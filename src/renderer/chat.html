@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claude Buddy</title>
+    <link rel="stylesheet" href="chat.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="titlebar">
+        <canvas id="logo" class="logo" aria-hidden="true"></canvas>
+        <span class="title">Buddy</span>
+        <button id="modelBtn" class="model-chip no-drag" type="button" aria-haspopup="menu" title="Change model">
+          <span id="modelName">No model</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <div class="grow"></div>
+        <button id="newBtn" class="icon-btn no-drag" type="button" title="New chat (Ctrl+N)" aria-label="New chat">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.4 2.6a2.1 2.1 0 0 1 3 3L12.5 14.5 8 16l1.5-4.5Z" />
+          </svg>
+        </button>
+        <button id="settingsBtn" class="icon-btn no-drag" type="button" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+            />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+        <button id="closeBtn" class="icon-btn no-drag" type="button" title="Hide (Esc)" aria-label="Hide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+        </button>
+      </header>
+
+      <div id="modelMenu" class="menu hidden" role="menu"></div>
+
+      <main id="scroller">
+        <section id="welcome" class="welcome">
+          <canvas id="hero" aria-hidden="true"></canvas>
+          <h1>How can I help?</h1>
+          <p id="welcomeSub" class="sub">I take a look at your screen each time you send a message.</p>
+          <div id="setup" class="setup hidden"></div>
+          <div class="suggestions">
+            <button class="suggestion" type="button" data-q="What's on my screen right now?">What's on my screen?</button>
+            <button class="suggestion" type="button" data-q="Explain the error on my screen and how to fix it.">Explain this error</button>
+            <button class="suggestion" type="button" data-q="Write a short Word document that summarizes what's on my screen.">Make a Word summary</button>
+            <button class="suggestion" type="button" data-q="Help me write a reply to the message on my screen.">Help me reply</button>
+          </div>
+          <p id="hotkeyHint" class="hint hidden"></p>
+        </section>
+        <div id="messages" aria-live="polite"></div>
+      </main>
+
+      <footer class="composer-wrap">
+        <div class="composer">
+          <textarea id="input" rows="1" dir="auto" placeholder="Ask about anything on your screen…" aria-label="Message Buddy"></textarea>
+          <div class="composer-bar">
+            <button id="screenBtn" class="chip on" type="button" aria-pressed="true"></button>
+            <div class="grow"></div>
+            <button id="sendBtn" class="send" type="button" aria-label="Send"></button>
+          </div>
+        </div>
+      </footer>
+
+      <section id="settings" class="sheet hidden" aria-label="Settings">
+        <header class="sheet-head">
+          <button id="settingsBack" class="icon-btn" type="button" aria-label="Back to chat" title="Back (Esc)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+          </button>
+          <h2>Settings</h2>
+          <div class="grow"></div>
+          <span id="savedToast" class="toast">Saved</span>
+        </header>
+        <div class="sheet-body">
+          <div class="field">
+            <span class="label">Ollama</span>
+            <div class="ollama-row">
+              <span id="ollamaDot" class="dot"></span>
+              <span id="ollamaText" class="ollama-text"></span>
+              <button id="ollamaAction" class="btn small hidden" type="button"></button>
+            </div>
+            <details class="advanced">
+              <summary>Ollama address</summary>
+              <div class="key-row">
+                <input id="ollamaUrl" type="text" spellcheck="false" autocomplete="off" aria-label="Ollama address" />
+                <button id="ollamaUrlSave" class="btn" type="button">Save</button>
+              </div>
+              <p class="help">Keep http://127.0.0.1:11434 unless Ollama runs on another computer.</p>
+              <p id="ollamaUrlStatus" class="status"></p>
+            </details>
+          </div>
+
+          <div id="modelField" class="field">
+            <span class="label">Model</span>
+            <div id="modelList" class="options"></div>
+            <p id="modelEmpty" class="help hidden">No models on this PC yet. Download one below.</p>
+            <p id="modelStatus" class="status"></p>
+          </div>
+
+          <div id="addField" class="field">
+            <label class="label" for="pullName">Add a model</label>
+            <div class="key-row">
+              <input id="pullName" type="text" spellcheck="false" autocomplete="off" placeholder="Model name, e.g. qwen3.5:4b" />
+              <button id="pullBtn" class="btn primary" type="button">Download</button>
+            </div>
+            <div id="pullBox" class="pull hidden">
+              <div class="bar"><span id="pullBar"></span></div>
+              <div class="pull-row">
+                <span id="pullText"></span>
+                <button id="pullCancel" class="link danger" type="button">Cancel</button>
+              </div>
+            </div>
+            <p id="pullStatus" class="status"></p>
+            <div id="suggestedWrap">
+              <p class="sub-label">Suggested: these can see your screen</p>
+              <div id="suggested" class="suggested"></div>
+            </div>
+            <p class="help">
+              Any model from the <a href="https://ollama.com/search?c=vision">Ollama library</a> works. Only models that can see
+              images can read your screen.
+            </p>
+          </div>
+
+          <div id="thinkField" class="field">
+            <span class="label">Thinking</span>
+            <div id="thinkSeg" class="segmented" role="group" aria-label="Thinking">
+              <button type="button" data-v="off">Off</button>
+              <button type="button" data-v="on">On</button>
+            </div>
+            <p class="help">On makes this model reason before it answers: better on tricky questions, but slower.</p>
+          </div>
+
+          <div id="actionsField" class="field">
+            <span class="label">Control my PC</span>
+            <div id="controlSeg" class="segmented" role="group" aria-label="Control my PC">
+              <button type="button" data-v="off">Off</button>
+              <button type="button" data-v="ask">Ask first</button>
+              <button type="button" data-v="auto">Allow</button>
+            </div>
+            <p id="controlHelp" class="help"></p>
+            <label class="switch-row">
+              <span>Create documents</span>
+              <input type="checkbox" id="documents" />
+              <span class="switch" aria-hidden="true"></span>
+            </label>
+            <p class="help">Word, PDF and other files are saved in <button id="openDocs" class="link" type="button">Documents\Claude Buddy</button>.</p>
+            <p id="toolsNote" class="status err"></p>
+          </div>
+
+          <div class="field">
+            <span class="label">Screenshot detail</span>
+            <div id="detailSeg" class="segmented" role="group" aria-label="Screenshot detail">
+              <button type="button" data-v="high">Sharp</button>
+              <button type="button" data-v="low">Light</button>
+            </div>
+            <p class="help">Sharp reads small text best. Light is faster.</p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="hotkey">Shortcut to open the chat</label>
+            <input id="hotkey" readonly placeholder="Click here, then press keys" />
+            <p class="help">Works from any app. Press Backspace to turn it off.</p>
+            <p id="hotkeyStatus" class="status"></p>
+          </div>
+
+          <label class="switch-row">
+            <span>Show the floating buddy</span>
+            <input type="checkbox" id="showMascot" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+          <label class="switch-row">
+            <span>Start with Windows</span>
+            <input type="checkbox" id="startWithWindows" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <p id="privacy" class="help fine"></p>
+        </div>
+      </section>
+
+      <div id="lightbox" class="lightbox hidden" role="dialog" aria-label="Screenshot">
+        <img id="lightboxImg" alt="The screenshot that was sent" />
+      </div>
+    </div>
+
+    <script src="../../node_modules/marked/lib/marked.umd.js"></script>
+    <script src="../../node_modules/dompurify/dist/purify.min.js"></script>
+    <script src="../shared/sprite.js"></script>
+    <script src="chat.js"></script>
+  </body>
+</html>

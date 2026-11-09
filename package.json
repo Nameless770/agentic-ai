@@ -1,0 +1,23 @@
+{
+  "name": "claude-buddy",
+  "productName": "Claude Buddy",
+  "version": "2.0.0",
+  "description": "A floating desktop buddy that sees your screen and answers with local AI models from Ollama.",
+  "main": "src/main/main.js",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "icons": "node scripts/make-icons.js",
+    "package": "node scripts/package.js"
+  },
+  "dependencies": {
+    "docx": "^9.15.3",
+    "dompurify": "^3.4.17",
+    "marked": "^18.1.3"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.2.3"
+  }
+}
